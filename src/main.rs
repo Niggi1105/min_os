@@ -1,16 +1,21 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(min_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-mod vga;
-
 use core::panic::PanicInfo;
+use min_os::println;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
+
+    //setup function for the kernel
+    min_os::init();
+
+    // invoke a breakpoint exception
+    x86_64::instructions::interrupts::int3();
 
     #[cfg(test)]
     test_main();
@@ -18,15 +23,23 @@ pub extern "C" fn _start() -> ! {
     loop {}
 }
 
+#[cfg(not(test))]
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
 
 #[cfg(test)]
-fn test_runner(tests: &[&dyn Fn()]) {
-    println!("running {} tests", tests.len());
-    for test in tests {
-        test()
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    min_os::test_panic_handler(info)
+}
+
+#[cfg(test)]
+mod test {
+    #[test_case]
+    fn simple_assert() {
+        assert_eq!(1, 1)
     }
 }
