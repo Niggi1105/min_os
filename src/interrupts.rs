@@ -16,3 +16,13 @@ pub fn init_idt() {
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
+
+#[cfg(test)]
+mod test {
+    #[test_case]
+    fn test_breakpoint_exception() {
+        // invoke a breakpoint exception
+        x86_64::instructions::interrupts::int3();
+        // if the maching keeps running we have a success
+    }
+}

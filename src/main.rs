@@ -14,9 +14,6 @@ pub extern "C" fn _start() -> ! {
     //setup function for the kernel
     min_os::init();
 
-    // invoke a breakpoint exception
-    x86_64::instructions::interrupts::int3();
-
     #[cfg(test)]
     test_main();
 
